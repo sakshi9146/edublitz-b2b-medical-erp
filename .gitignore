@@ -1,0 +1,61 @@
+# Java / Maven
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+jacoco.exec
+**/jacoco.exec
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / env (keep *.example tracked)
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Frontend build & cache
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+.turbo/
+
+# Terraform
+terraform/.terraform/
+terraform/**/.terraform/
+terraform/**/*.tfstate
+terraform/**/*.tfstate.backup
+terraform/**/*.tfvars
+!terraform/**/*.tfvars.example
+terraform/**/.terraform.lock.hcl
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,11 @@
+# Binds Ingress resources to the AWS Load Balancer Controller (ALB).
+# If you installed the controller via Helm with default settings, it may
+# already create an IngressClass named "alb" — re-applying this is a no-op.
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: alb
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+spec:
+  controller: ingress.k8s.aws/alb

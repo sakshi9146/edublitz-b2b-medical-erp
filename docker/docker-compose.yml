@@ -1,0 +1,89 @@
+version: "3.9"
+
+# Backend API services only.
+# - MongoDB: Atlas (set MONGODB_URI_* in .env — no database container).
+# - Frontend: S3 + CloudFront (not in this compose file). Build with `npm run build`
+#   and sync `frontend/dist`; point VITE_* URLs at your API load balancer or these ports.
+
+networks:
+  med-erp-net:
+    driver: bridge
+
+services:
+
+  user-service:
+    build:
+      context: ../user-service
+      dockerfile: Dockerfile
+    container_name: med-erp-user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      MONGODB_URI: ${MONGODB_URI_USERS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@medicalerp.com}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin@123456}
+      SEED_ORG_NAME: ${SEED_ORG_NAME:-MedERP HQ}
+      SEED_ORG_REG_NUMBER: ${SEED_ORG_REG_NUMBER:-HQ-0001}
+    networks:
+      - med-erp-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  product-service:
+    build:
+      context: ../product-service
+      dockerfile: Dockerfile
+    container_name: med-erp-product-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      MONGODB_URI: ${MONGODB_URI_PRODUCTS}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      LOW_STOCK_THRESHOLD: ${LOW_STOCK_THRESHOLD:-10}
+    networks:
+      - med-erp-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  order-service:
+    build:
+      context: ../order-service
+      dockerfile: Dockerfile
+    container_name: med-erp-order-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      MONGODB_URI: ${MONGODB_URI_ORDERS}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      PRODUCT_SERVICE_URL: http://product-service:8082/api/v1
+      USER_SERVICE_URL: http://user-service:8081/api/v1
+    depends_on:
+      product-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - med-erp-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
