@@ -65,11 +65,11 @@ spec:
                   key: CORS_ALLOWED_ORIGINS
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "150m"
+              memory: "256Mi"
             limits:
-              cpu: "500m"
-              memory: "1Gi"
+              cpu: "300m"
+              memory: "512Mi"
           readinessProbe:
             httpGet:
               path: /api/v1/actuator/health/readiness
